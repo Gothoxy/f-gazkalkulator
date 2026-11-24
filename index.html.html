@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hűtőkör kalkulátor Pro (Offline)</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --card-2: #0b1220;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --border: #334155;
+      --accent: #38bdf8;
+      --accent-text: #082f49;
+      --good: #22c55e;
+      --warn: #f59e0b;
+      --bad: #ef4444;
+    }
+
+    body.light {
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --card-2: #f8fafc;
+      --text: #0f172a;
+      --muted: #475569;
+      --border: #cbd5e1;
+      --accent: #0284c7;
+      --accent-text: #ffffff;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 14px;
+      line-height: 1.45;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+
+    .app {
+      max-width: 980px;
+      margin: 0 auto;
+      display: grid;
+      gap: 14px;
+    }
+
+    .header {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 1.18rem;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      background: rgba(34, 197, 94, 0.16);
+      color: var(--good);
+      border: 1px solid rgba(34, 197, 94, 0.35);
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+
+    .btn {
+      background: var(--card-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-size: 0.86rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn.primary {
+      background: var(--accent);
+      color: var(--accent-text);
+      border-color: var(--accent);
+    }
+
+    .btn.danger {
+      border-color: rgba(239, 68, 68, 0.45);
+      color: var(--bad);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+      gap: 14px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+    }
+
+    .card h2 {
+      margin: 0 0 12px 0;
+      font-size: 1rem;
+      color: var(--accent);
+    }
+
+    .ref-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .ref-btn {
+      background: var(--card-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 11px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .ref-btn.active {
+      background: var(--accent);
+      color: var(--accent-text);
+      border-color: var(--accent);
+    }
+
+    .switch-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--card-2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+    }
+
+    .switch-row label {
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+
+    .control {
+      margin-bottom: 14px;
+    }
+
+    .control-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.88rem;
+      margin-bottom: 6px;
+    }
+
+    .input-pair {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .num-input {
+      width: 82px;
+      background: var(--card-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 5px 8px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      text-align: right;
+    }
+
+    .unit {
+      font-size: 0.82rem;
+      color: var(--muted);
+      min-width: 28px;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .kpi {
+      background: var(--card-2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .kpi .k-label {
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .kpi .k-value {
+      font-size: 1.2rem;
+      font-weight: 800;
+      margin-top: 4px;
+    }
+
+    .kpi .k-sub {
+      font-size: 0.76rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .diag {
+      background: var(--card-2);
+      border-left: 4px solid var(--accent);
+      border-radius: 10px;
+      padding: 12px;
+      font-size: 0.88rem;
+      margin-bottom: 12px;
+    }
+
+    .diag.good { border-left-color: var(--good); }
+    .diag.warn { border-left-color: var(--warn); }
+    .diag.bad { border-left-color: var(--bad); }
+
+    .diag-title {
+      font-weight: 800;
+      margin-bottom: 6px;
+      font-size: 0.94rem;
+    }
+
+    .diag-list {
+      margin: 6px 0 0 0;
+      padding-left: 18px;
+    }
+
+    .diag-list li {
+      margin-bottom: 4px;
+    }
+
+    .action-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .status-msg {
+      font-size: 0.82rem;
+      color: var(--good);
+      font-weight: 600;
+    }
+
+    canvas {
+      width: 100%;
+      height: 300px;
+      background: var(--card-2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      display: block;
+    }
+
+    .note-input {
+      width: 100%;
+      background: var(--card-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 9px 11px;
+      font-size: 0.88rem;
+      margin-bottom: 10px;
+    }
+
+    .logs {
+      display: grid;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .log-item {
+      background: var(--card-2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 0.84rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .log-meta {
+      color: var(--muted);
+      font-size: 0.76rem;
+      margin-bottom: 3px;
+    }
+
+    .del-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      border-radius: 8px;
+      padding: 4px 8px;
+      font-size: 0.76rem;
+      cursor: pointer;
+    }
+
+    .note {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="header">
+      <div>
+        <h1>Hűtőkör túlhevülés- és elpárolgás-kalkulátor</h1>
+        <div style="font-size:0.84rem;color:var(--muted);">Offline üzemmód • -20 °C-tól • Részletes ok-magyarázatokkal</div>
+      </div>
+      <div class="header-actions">
+        <span class="badge">Offline kész</span>
+        <button type="button" class="btn" id="themeBtn">Világos mód</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>1. Hűtőközeg és mérési mód</h2>
+      <div class="ref-buttons" id="refButtons"></div>
+
+      <div class="switch-row">
+        <label for="liquidToggle">Folyadék oldal (alhűtés számítás be/ki)</label>
+        <input type="checkbox" id="liquidToggle" style="width:20px;height:20px;cursor:pointer;" />
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h2>2. Szívóoldal és teljesítmény</h2>
+
+        <div class="control">
+          <div class="control-top">
+            <span>Szívónyomás</span>
+            <div class="input-pair">
+              <input type="number" class="num-input" id="pLowNum" min="0.5" max="16.0" step="0.1" value="3.0" />
+              <span class="unit">bar</span>
+            </div>
+          </div>
+          <input type="range" id="pLowRange" min="0.5" max="16.0" step="0.1" value="3.0" />
+        </div>
+
+        <div class="control">
+          <div class="control-top">
+            <span>Szívócső felületi hőmérséklet</span>
+            <div class="input-pair">
+              <input type="number" class="num-input" id="tSuctionNum" min="-20.0" max="35.0" step="0.5" value="-14.0" />
+              <span class="unit">°C</span>
+            </div>
+          </div>
+          <input type="range" id="tSuctionRange" min="-20.0" max="35.0" step="0.5" value="-14.0" />
+        </div>
+
+        <div class="control">
+          <div class="control-top">
+            <span>Becsült hűtőteljesítmény</span>
+            <div class="input-pair">
+              <input type="number" class="num-input" id="qPowerNum" min="0.5" max="30.0" step="0.5" value="3.5" />
+              <span class="unit">kW</span>
+            </div>
+          </div>
+          <input type="range" id="qPowerRange" min="0.5" max="30.0" step="0.5" value="3.5" />
+        </div>
+
+        <div id="liquidControls" class="hidden">
+          <hr style="border:0;border-top:1px solid var(--border);margin:14px 0;" />
+          <h2>3. Folyadék oldal (nagynyomás)</h2>
+
+          <div class="control">
+            <div class="control-top">
+              <span>Folyadékoldali nyomás</span>
+              <div class="input-pair">
+                <input type="number" class="num-input" id="pHighNum" min="6.0" max="35.0" step="0.2" value="18.2" />
+                <span class="unit">bar</span>
+              </div>
+            </div>
+            <input type="range" id="pHighRange" min="6.0" max="35.0" step="0.2" value="18.2" />
+          </div>
+
+          <div class="control">
+            <div class="control-top">
+              <span>Folyadékcső felületi hőmérséklet</span>
+              <div class="input-pair">
+                <input type="number" class="num-input" id="tLiquidNum" min="10.0" max="65.0" step="0.5" value="35.0" />
+                <span class="unit">°C</span>
+              </div>
+            </div>
+            <input type="range" id="tLiquidRange" min="10.0" max="65.0" step="0.5" value="35.0" />
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>4. Számított eredmények és lehetséges okok</h2>
+        <div class="kpis">
+          <div class="kpi">
+            <div class="k-label">Elpárolgási telítés</div>
+            <div class="k-value" id="tEvapOut">-20.0 °C</div>
+            <div class="k-sub">Interpolált P–T görbéből</div>
+          </div>
+          <div class="kpi">
+            <div class="k-label">Túlhevülés (ΔT_sh)</div>
+            <div class="k-value" id="shOut">6.0 K</div>
+            <div class="k-sub">Szívócső − Telítés</div>
+          </div>
+          <div class="kpi">
+            <div class="k-label">Becsült elpárolgás</div>
+            <div class="k-value" id="mDotOut">79.7 kg/h</div>
+            <div class="k-sub" id="mDotSecOut">22.1 g/s</div>
+          </div>
+          <div class="kpi hidden" id="subcoolKpi">
+            <div class="k-label">Alhűtés (ΔT_sc)</div>
+            <div class="k-value" id="scOut">5.0 K</div>
+            <div class="k-sub" id="tCondSub">Kond. telítés: 40.0 °C</div>
+          </div>
+        </div>
+
+        <div class="diag" id="diagBox"></div>
+
+        <input type="text" class="note-input" id="unitLabel" placeholder="Berendezés megnevezése (pl. Hűtőkamra #1 - szívó)" />
+
+        <div class="action-bar">
+          <button type="button" class="btn primary" id="copyBtn">Jegyzet másolása</button>
+          <button type="button" class="btn" id="saveLogBtn">Mentés naplóba</button>
+          <span class="status-msg" id="statusMsg"></span>
+        </div>
+
+        <div class="note">Tájékoztató mérnöki/szervizes becslőeszköz. A felsorolt okok irányadó diagnosztikai szempontok; a pontos hibamegállapításhoz műszeres és helyszíni ellenőrzés szükséges.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>5. Élő diagram</h2>
+      <canvas id="chartCanvas" width="920" height="300"></canvas>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+        <h2 style="margin:0;">6. Helyi mérési napló (csak ezen az eszközön)</h2>
+        <button type="button" class="btn danger" id="clearLogsBtn">Napló törlése</button>
+      </div>
+      <div class="logs" id="logsContainer"></div>
+    </div>
+  </div>
+
+  <script>
+    const REFRIGERANTS = [
+      {
+        id: "R404A", name: "R404A", dh: 158,
+        lowPts: [[1.4, -33.0], [2.2, -25.0], [3.0, -20.0], [4.5, -10.0], [6.5, 0.0]],
+        highPts: [[12.0, 25.0], [15.0, 33.0], [18.2, 40.0], [22.0, 48.0]]
+      },
+      {
+        id: "R32", name: "R32", dh: 285,
+        lowPts: [[2.5, -25.0], [3.5, -18.0], [5.0, -10.0], [7.5, 0.0], [11.0, 12.0]],
+        highPts: [[17.5, 28.0], [21.0, 34.0], [24.8, 40.0], [30.0, 48.0]]
+      },
+      {
+        id: "R410A", name: "R410A", dh: 198,
+        lowPts: [[2.6, -24.0], [3.7, -17.0], [5.2, -8.5], [7.9, 2.0], [11.0, 12.0]],
+        highPts: [[17.0, 28.0], [20.5, 34.0], [24.2, 40.0], [29.5, 48.0]]
+      },
+      {
+        id: "R134a", name: "R134a", dh: 192,
+        lowPts: [[0.8, -28.0], [1.3, -20.0], [2.0, -10.0], [2.9, 0.0], [4.1, 10.0]],
+        highPts: [[6.6, 25.0], [8.3, 33.0], [10.2, 40.0], [13.2, 50.0]]
+      },
+      {
+        id: "R290", name: "R290", dh: 365,
+        lowPts: [[1.5, -28.0], [2.4, -20.0], [3.5, -10.0], [4.7, 0.0], [6.4, 10.0]],
+        highPts: [[9.5, 26.0], [11.5, 33.0], [13.7, 40.0], [17.0, 50.0]]
+      },
+      {
+        id: "R449A", name: "R449A", dh: 184,
+        lowPts: [[1.2, -30.0], [1.9, -20.0], [2.9, -10.0], [4.2, 0.0], [5.8, 10.0]],
+        highPts: [[10.5, 26.0], [13.2, 34.0], [15.6, 40.0], [19.4, 48.0]]
+      },
+      {
+        id: "R448A", name: "R448A", dh: 186,
+        lowPts: [[1.2, -30.0], [1.9, -20.0], [2.9, -10.0], [4.3, 0.0], [5.9, 10.0]],
+        highPts: [[10.8, 26.0], [13.5, 34.0], [15.9, 40.0], [19.8, 48.0]]
+      },
+      {
+        id: "R513A", name: "R513A", dh: 175,
+        lowPts: [[1.0, -25.0], [1.4, -20.0], [2.1, -10.0], [3.0, 0.0], [4.2, 10.0]],
+        highPts: [[7.2, 26.0], [9.0, 34.0], [10.8, 40.0], [13.8, 50.0]]
+      }
+    ];
+
+    const STORAGE_KEY = "hutokor_offline_naplo_v2";
+    let currentRefId = "R404A";
+    let lastSummaryText = "";
+
+    const refButtonsEl = document.getElementById("refButtons");
+    const liquidToggle = document.getElementById("liquidToggle");
+    const liquidControls = document.getElementById("liquidControls");
+    const subcoolKpi = document.getElementById("subcoolKpi");
+    const themeBtn = document.getElementById("themeBtn");
+
+    const pairs = [
+      ["pLowRange", "pLowNum"],
+      ["tSuctionRange", "tSuctionNum"],
+      ["qPowerRange", "qPowerNum"],
+      ["pHighRange", "pHighNum"],
+      ["tLiquidRange", "tLiquidNum"]
+    ];
+
+    const canvas = document.getElementById("chartCanvas");
+    const ctx = canvas.getContext("2d");
+
+    function interpLinear(pts, x) {
+      if (x <= pts[0][0]) {
+        const slope = (pts[1][1] - pts[0][1]) / (pts[1][0] - pts[0][0]);
+        return pts[0][1] + (x - pts[0][0]) * slope;
+      }
+      const last = pts.length - 1;
+      if (x >= pts[last][0]) {
+        const slope = (pts[last][1] - pts[last - 1][1]) / (pts[last][0] - pts[last - 1][0]);
+        return pts[last][1] + (x - pts[last][0]) * slope;
+      }
+      for (let i = 0; i < pts.length - 1; i++) {
+        const [x0, y0] = pts[i];
+        const [x1, y1] = pts[i + 1];
+        if (x >= x0 && x <= x1) {
+          const t = (x - x0) / (x1 - x0);
+          return y0 + t * (y1 - y0);
+        }
+      }
+      return pts[0][1];
+    }
+
+    function renderRefButtons() {
+      refButtonsEl.innerHTML = "";
+      REFRIGERANTS.forEach(r => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "ref-btn" + (r.id === currentRefId ? " active" : "");
+        btn.textContent = r.name;
+        btn.addEventListener("click", () => {
+          currentRefId = r.id;
+          renderRefButtons();
+          update();
+        });
+        refButtonsEl.appendChild(btn);
+      });
+    }
+
+    function bindPairs() {
+      pairs.forEach(([rangeId, numId]) => {
+        const rEl = document.getElementById(rangeId);
+        const nEl = document.getElementById(numId);
+        rEl.addEventListener("input", () => {
+          nEl.value = rEl.value;
+          update();
+        });
+        nEl.addEventListener("input", () => {
+          const v = parseFloat(nEl.value);
+          if (!Number.isNaN(v)) {
+            rEl.value = v;
+            update();
+          }
+        });
+      });
+    }
+
+    function drawBarChart(items) {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      const w = Math.max(300, Math.floor(rect.width));
+      const h = 300;
+      if (canvas.width !== w * dpr || canvas.height !== h * dpr) {
+        canvas.width = w * dpr;
+        canvas.height = h * dpr;
+      }
+      ctx.save();
+      ctx.scale(dpr, dpr);
+      ctx.clearRect(0, 0, w, h);
+
+      const styles = getComputedStyle(document.body);
+      const gridColor = styles.getPropertyValue("--border").trim() || "#334155";
+      const textColor = styles.getPropertyValue("--text").trim() || "#f8fafc";
+      const mutedColor = styles.getPropertyValue("--muted").trim() || "#94a3b8";
+
+      const padLeft = 46;
+      const padRight = 16;
+      const padTop = 26;
+      const padBottom = 46;
+      const plotW = w - padLeft - padRight;
+      const plotH = h - padTop - padBottom;
+
+      const values = items.map(x => x.value);
+      let minVal = Math.min(0, ...values);
+      let maxVal = Math.max(0, ...values);
+      if (minVal === maxVal) {
+        minVal = -10;
+        maxVal = 10;
+      }
+      const span = maxVal - minVal;
+      minVal -= span * 0.14;
+      maxVal += span * 0.14;
+
+      const yZero = padTop + ((maxVal - 0) / (maxVal - minVal)) * plotH;
+
+      ctx.strokeStyle = gridColor;
+      ctx.lineWidth = 1;
+      const ticks = 5;
+      ctx.font = "11px sans-serif";
+      ctx.fillStyle = mutedColor;
+      ctx.textAlign = "right";
+      ctx.textBaseline = "middle";
+
+      for (let i = 0; i <= ticks; i++) {
+        const val = maxVal - (i / ticks) * (maxVal - minVal);
+        const y = padTop + (i / ticks) * plotH;
+        ctx.beginPath();
+        ctx.moveTo(padLeft, y);
+        ctx.lineTo(w - padRight, y);
+        ctx.stroke();
+        ctx.fillText(val.toFixed(0), padLeft - 8, y);
+      }
+
+      ctx.strokeStyle = mutedColor;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(padLeft, yZero);
+      ctx.lineTo(w - padRight, yZero);
+      ctx.stroke();
+
+      const slotW = plotW / items.length;
+      const barW = Math.min(52, slotW * 0.55);
+
+      items.forEach((item, idx) => {
+        const cx = padLeft + slotW * (idx + 0.5);
+        const x = cx - barW / 2;
+        const yVal = padTop + ((maxVal - item.value) / (maxVal - minVal)) * plotH;
+        const barTop = Math.min(yZero, yVal);
+        const barHeight = Math.max(2, Math.abs(yVal - yZero));
+
+        ctx.fillStyle = item.color;
+        ctx.fillRect(x, barTop, barW, barHeight);
+
+        ctx.fillStyle = textColor;
+        ctx.font = "bold 11px sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = item.value >= 0 ? "bottom" : "top";
+        const labelY = item.value >= 0 ? barTop - 4 : barTop + barHeight + 4;
+        ctx.fillText(item.value.toFixed(1), cx, labelY);
+
+        ctx.fillStyle = mutedColor;
+        ctx.font = "11px sans-serif";
+        ctx.textBaseline = "top";
+        ctx.fillText(item.label, cx, h - padBottom + 10);
+      });
+
+      ctx.restore();
+    }
+
+    function buildDiagnosis(sh, liquidOn, sc) {
+      if (sh < 2.0) {
+        return {
+          level: "bad",
+          title: "Alacsony túlhevülés (< 2,0 K) — folyadék-visszacsapás kockázata",
+          causes: [
+            "Folyadék-visszacsapás veszélye: még nem teljesen elpárolgott közeg juthat a szívóvezetékbe (kompresszor-kockázat).",
+            "Túltöltés vagy túlzott adagolás: túl sok hűtőközeg van a körben, vagy az expanziós szelep túl sokat nyit.",
+            "Rossz keringés / elégtelen hőfelvétel: gyenge légáram vagy eljegesedett elpárologtató mellett nem tud eléggé túlhevülni a gáz."
+          ]
+        };
+      }
+
+      if (sh > 10.0) {
+        const causes = [
+          "Szivárgás / hűtőközeg-hiány: kevesebb közeg jut az elpárologtatóba, a gőz hamarabb túlhevül.",
+          "Hűtőközeg-egyensúly megborulása: keverék közegeknél (pl. R404A, R449A, R448A) szivárgás vagy gázfázisú utántöltés után megváltozhat a keringő összetétel.",
+          "Rossz keringés / fojtás vagy aluladagolás: folyadékoldali fojtás, szűrőszárító-ellenállás, alulméretes/rosszul beállított szelep vagy alacsonyabb térfogatáram.",
+          "Mérési / hőátadási hatás: szigeteletlen vagy melegebb környezetnek kitett csőfelület, illetve gyenge hőkontaktus."
+        ];
+        if (liquidOn && sc < 2.0) {
+          causes.unshift("Alacsony alhűtés mellett magas túlhevülés: ez klasszikusan hűtőközeg-hiányra / töltethiányra utal.");
+        } else if (liquidOn && sc > 8.0) {
+          causes.unshift("Magas alhűtés mellett magas túlhevülés: folyadékoldali torlódás / fojtás vagy szűrőszárító-dugulás gyanúja.");
+        }
+        return {
+          level: "warn",
+          title: "Magas túlhevülés (> 10,0 K) — eltérés a tipikus tartománytól",
+          causes
+        };
+      }
+
+      if (liquidOn && sc > 9.0) {
+        return {
+          level: "warn",
+          title: "Normál túlhevülés, de magas alhűtés (> 9,0 K)",
+          causes: [
+            "Lehetséges túltöltés a hűtőkörben.",
+            "Kondenzátor-hőleadási gond: szennyezett hőcserélő, ventilátorhiba vagy magas környezeti hőmérséklet.",
+            "Folyadékoldali fojtás / torlódás a kondenzátor után."
+          ]
+        };
+      }
+
+      if (liquidOn && sc < 1.5) {
+        return {
+          level: "warn",
+          title: "Normál túlhevülés, de alacsony alhűtés (< 1,5 K)",
+          causes: [
+            "Kevés a folyadék-ráhűtés: gázbuborékok (flash-gas) jelenhetnek meg az adagolószelep előtt.",
+            "Érdemes ellenőrizni a töltetszintet és a kondenzátor működését."
+          ]
+        };
+      }
+
+      return {
+        level: "good",
+        title: "Kiegyensúlyozott üzemi tartomány (2,0–10,0 K túlhevülés)",
+        causes: [
+          "A szívóoldali túlhevülés a szokásos tartományban van, nincs azonnali folyadék-visszacsapásra vagy extrém túltúlhevülésre utaló jel.",
+          "Érdemes összevetni a berendezés saját gyári/tervezési értékével és a valós hőmérsékleti igénnyel."
+        ]
+      };
+    }
+
+    function update() {
+      const ref = REFRIGERANTS.find(r => r.id === currentRefId) || REFRIGERANTS[0];
+      const liquidOn = liquidToggle.checked;
+
+      liquidControls.classList.toggle("hidden", !liquidOn);
+      subcoolKpi.classList.toggle("hidden", !liquidOn);
+
+      const pLow = parseFloat(document.getElementById("pLowNum").value) || 0;
+      const tSuction = parseFloat(document.getElementById("tSuctionNum").value) || 0;
+      const qPower = parseFloat(document.getElementById("qPowerNum").value) || 0;
+
+      const tEvap = interpLinear(ref.lowPts, pLow);
+      const sh = tSuction - tEvap;
+      const mKgH = (qPower * 3600) / ref.dh;
+      const mGS = (qPower * 1000) / ref.dh;
+
+      document.getElementById("tEvapOut").textContent = tEvap.toFixed(1) + " °C";
+      document.getElementById("shOut").textContent = sh.toFixed(1) + " K";
+      document.getElementById("mDotOut").textContent = mKgH.toFixed(1) + " kg/h";
+      document.getElementById("mDotSecOut").textContent = mGS.toFixed(1) + " g/s";
+
+      const chartItems = [
+        { label: "Elp. telítés", value: tEvap, color: "#38bdf8" },
+        { label: "Szívócső", value: tSuction, color: "#818cf8" },
+        { label: "Túlhevülés", value: sh, color: "#22c55e" }
+      ];
+
+      let sc = null;
+      let tCond = null;
+
+      let summaryLines = [
+        "Hűtőközeg: " + ref.name,
+        "Szívónyomás: " + pLow.toFixed(1) + " bar | Szívócső: " + tSuction.toFixed(1) + " °C",
+        "Elpárolgási telítés: " + tEvap.toFixed(1) + " °C | Túlhevülés: " + sh.toFixed(1) + " K",
+        "Becsült elpárolgás (" + qPower.toFixed(1) + " kW): " + mKgH.toFixed(1) + " kg/h (" + mGS.toFixed(1) + " g/s)"
+      ];
+
+      if (liquidOn) {
+        const pHigh = parseFloat(document.getElementById("pHighNum").value) || 0;
+        const tLiquid = parseFloat(document.getElementById("tLiquidNum").value) || 0;
+        tCond = interpLinear(ref.highPts, pHigh);
+        sc = tCond - tLiquid;
+
+        document.getElementById("scOut").textContent = sc.toFixed(1) + " K";
+        document.getElementById("tCondSub").textContent = "Kond. telítés: " + tCond.toFixed(1) + " °C";
+
+        chartItems.push(
+          { label: "Kond. telítés", value: tCond, color: "#f59e0b" },
+          { label: "Folyadékcső", value: tLiquid, color: "#fb923c" },
+          { label: "Alhűtés", value: sc, color: "#10b981" }
+        );
+
+        summaryLines.push(
+          "Folyadéknyomás: " + pHigh.toFixed(1) + " bar | Folyadékcső: " + tLiquid.toFixed(1) + " °C",
+          "Kond. telítés: " + tCond.toFixed(1) + " °C | Alhűtés: " + sc.toFixed(1) + " K"
+        );
+      }
+
+      const diag = buildDiagnosis(sh, liquidOn, sc);
+      const diagBox = document.getElementById("diagBox");
+      diagBox.className = "diag " + diag.level;
+      diagBox.innerHTML = `
+        <div class="diag-title">${diag.title}</div>
+        <ul class="diag-list">
+          ${diag.causes.map(c => `<li>${c}</li>`).join("")}
+        </ul>
+      `;
+
+      summaryLines.push("Állapot: " + diag.title);
+      diag.causes.forEach(c => summaryLines.push("- " + c));
+
+      const unitLabel = document.getElementById("unitLabel").value.trim();
+      if (unitLabel) {
+        summaryLines.unshift("Egység: " + unitLabel);
+      }
+      lastSummaryText = summaryLines.join("\n");
+
+      drawBarChart(chartItems);
+    }
+
+    function showStatus(msg) {
+      const el = document.getElementById("statusMsg");
+      el.textContent = msg;
+      setTimeout(() => {
+        if (el.textContent === msg) el.textContent = "";
+      }, 2200);
+    }
+
+    function getLogs() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+      } catch {
+        return [];
+      }
+    }
+
+    function setLogs(items) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+      } catch {}
+    }
+
+    function renderLogs() {
+      const container = document.getElementById("logsContainer");
+      const logs = getLogs();
+      if (!logs.length) {
+        container.innerHTML = '<div style="color:var(--muted);font-size:0.86rem;">Még nincs elmentett mérés ezen az eszközön.</div>';
+        return;
+      }
+      container.innerHTML = "";
+      logs.forEach((item, idx) => {
+        const div = document.createElement("div");
+        div.className = "log-item";
+        div.innerHTML = `
+          <div>
+            <div class="log-meta">${item.date}${item.unit ? " • " + item.unit : ""} • ${item.ref}</div>
+            <div>${item.summaryLine}</div>
+          </div>
+          <button type="button" class="del-btn" data-idx="${idx}">Töröl</button>
+        `;
+        div.querySelector(".del-btn").addEventListener("click", () => {
+          const next = getLogs().filter((_, i) => i !== idx);
+          setLogs(next);
+          renderLogs();
+        });
+        container.appendChild(div);
+      });
+    }
+
+    document.getElementById("copyBtn").addEventListener("click", async () => {
+      update();
+      try {
+        await navigator.clipboard.writeText(lastSummaryText);
+        showStatus("Jegyzet vágólapra másolva!");
+      } catch {
+        const ta = document.createElement("textarea");
+        ta.value = lastSummaryText;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+        showStatus("Jegyzet másolva!");
+      }
+    });
+
+    document.getElementById("saveLogBtn").addEventListener("click", () => {
+      update();
+      const now = new Date().toLocaleString("hu-HU");
+      const unit = document.getElementById("unitLabel").value.trim();
+      const shText = document.getElementById("shOut").textContent;
+      const mText = document.getElementById("mDotOut").textContent;
+      const scText = liquidToggle.checked ? " | Alhűtés: " + document.getElementById("scOut").textContent : "";
+      const logs = getLogs();
+      logs.unshift({
+        date: now,
+        unit,
+        ref: currentRefId,
+        summaryLine: `Túlhevülés: ${shText}${scText} | Elpárolgás: ${mText}`
+      });
+      setLogs(logs.slice(0, 30));
+      renderLogs();
+      showStatus("Mentve a helyi naplóba!");
+    });
+
+    document.getElementById("clearLogsBtn").addEventListener("click", () => {
+      setLogs([]);
+      renderLogs();
+      showStatus("Napló törölve.");
+    });
+
+    themeBtn.addEventListener("click", () => {
+      document.body.classList.toggle("light");
+      themeBtn.textContent = document.body.classList.contains("light") ? "Sötét mód" : "Világos mód";
+      update();
+    });
+
+    liquidToggle.addEventListener("change", update);
+    document.getElementById("unitLabel").addEventListener("input", update);
+    window.addEventListener("resize", update);
+
+    renderRefButtons();
+    bindPairs();
+    renderLogs();
+    update();
+  </script>
+</body>
+</html>
